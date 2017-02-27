@@ -4,6 +4,8 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var mysql      = require('mysql');
+
 
 var index = require('./routes/index');
 var users = require('./routes/users');
@@ -42,5 +44,28 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+// connect to mysql
+// databaseuser
+// databasepassword
+
+
+var connection = mysql.createConnection({
+  host     : 'databaseforproject.cjffpyni9e6r.us-east-2.rds.amazonaws.com',
+  user     : 'databaseuser',
+  password : 'databasepassword',
+  database : ''
+});
+
+connection.connect();
+
+connection.query('SELECT 1 + 1 AS solution', function (error, results, fields) {
+  if (error) throw error;
+  console.log('The solution is: ', results[0].solution);
+});
+
+connection.end();
+
+
 
 module.exports = app;
