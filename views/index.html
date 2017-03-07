@@ -35,7 +35,7 @@ var svg = d3.select("body").append("svg")
   .append("g")
     .attr("transform", "translate(" + outerRadius + "," + outerRadius + ")");
 
-d3.json("readme.json", function(error, imports) {
+d3.json("data.json", function(error, imports) {
   if (error) throw error;
 
   var indexByName = d3.map(),
