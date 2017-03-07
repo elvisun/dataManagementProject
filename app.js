@@ -1,3 +1,4 @@
+
 var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
@@ -12,9 +13,6 @@ var users = require('./routes/users');
 
 var app = express();
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'pug');
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
@@ -26,6 +24,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', index);
 app.use('/users', users);
+
+app.engine('html', require('ejs').renderFile);
+app.set('view engine', 'html');
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -46,10 +48,8 @@ app.use(function(err, req, res, next) {
 });
 
 // connect to mysql
-// databaseuser
-// databasepassword
-
-
+// username: databaseuser
+// password: databasepassword
 var connection = mysql.createConnection({
   host     : 'databaseforproject.cjffpyni9e6r.us-east-2.rds.amazonaws.com',
   user     : 'databaseuser',
@@ -64,8 +64,12 @@ connection.query('SELECT 1 + 1 AS solution', function (error, results, fields) {
   console.log('The solution is: ', results[0].solution);
 });
 
-connection.end();
 
+var router = express.Router();
+
+app.get('/', function (req, res) {
+  res.send('Hello World!')
+})
 
 
 module.exports = app;
