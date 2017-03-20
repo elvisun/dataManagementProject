@@ -54,7 +54,7 @@ var connection = mysql.createConnection({
   host     : 'databaseforproject.cjffpyni9e6r.us-east-2.rds.amazonaws.com',
   user     : 'databaseuser',
   password : 'databasepassword',
-  database : ''
+  database : 'sys'
 });
 
 connection.connect();
@@ -84,7 +84,11 @@ app.get('/histogram', function(req,res){
 
 // APIs
 app.get('/citydata', function (req,res){
-
+  connection.query('select startLocation, endLocation from offer', function (error, results, fields) {
+    if (error) throw error;
+    console.log(results);
+    res.json(results);
+  });
 });
 
 app.get('/calendardata', function(req,res){
@@ -92,7 +96,30 @@ app.get('/calendardata', function(req,res){
 });
 
 app.get('/histogramdata', function(req,res){
-
+  connection.query(' SELECT a.id, (count(b.fromUser) + count(c.user)) useCount FROM user a  JOIN offer b   ON a.id = b.fromUser  JOIN request c  ON a.id = c.user  group by a.id  order by a.id;',
+   function (error, results, fields) {
+    if (error) throw error;
+    var ret = [];
+    for (var i = results.length - 1; i >= 0; i--) {
+      ret.splice(0,0,results[i].useCount);
+    }
+    var newRet = [];
+    var step = 50;
+    for (var i = 0; i < 30; i++){
+      newRet.splice(newRet.length - 1,0,{
+        Letter: i * step,
+        Freq: 0
+      });
+    }
+    for (var i = ret.length - 1; i >= 0; i--) {
+      var k = Math.floor(ret[i] / step);
+      //console.log(k);
+      newRet[k].Freq++;
+    }
+    
+    //console.log(newRet);
+    res.json(newRet);
+  });
 });
 
 

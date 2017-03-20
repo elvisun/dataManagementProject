@@ -38,6 +38,14 @@
 <div class="container">
   <div class="row">
     <div id="key" class="col-mid-10 col-md-offset-1">
+      <pre>
+        select a.id,
+          count(b.fromUser) useCount
+        from user a left outer join offer b
+          on a.id = b.fromUser
+        group by a.id
+        order by a.id;
+      </pre>
       <script src="https://d3js.org/d3.v4.min.js"></script>
       <script>
 

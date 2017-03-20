@@ -38,8 +38,23 @@
 <div class="container">
   <div class="row">
     <div id="key" class="col-mid-10 col-md-offset-1">
+      <pre>
+        select startLocation, endLocation from offer
+      </pre>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/spin.js/2.0.1/spin.min.js'></script> 
     <script src="//d3js.org/d3.v3.min.js"></script>
     <script>
+      var target = document.getElementById('key');
+      var spinner = new Spinner({
+        lines: 9, // The number of lines to draw
+        length: 9, // The length of each line
+        width: 5, // The line thickness
+        radius: 14, // The radius of the inner circle
+        color: '#EE3124', // #rgb or #rrggbb or array of colors
+        speed: 1.9, // Rounds per second
+        trail: 40, // Afterglow percentage
+        className: 'spinner', // The CSS class to assign to the spinner
+      }).spin(target);
 
       var outerRadius = 960 / 2,
           innerRadius = outerRadius - 130;
@@ -61,7 +76,8 @@
         .append("g")
           .attr("transform", "translate(" + outerRadius + "," + outerRadius + ")");
 
-      d3.json("data.json", function(error, imports) {
+      d3.json("http://localhost:3000/citydata", function(error, imports) {
+        spinner.stop();
         if (error) throw error;
 
         var indexByName = d3.map(),
@@ -69,29 +85,39 @@
             matrix = [],
             n = 0;
 
-        // Returns the Flare package name for the given class name.
-        function name(name) {
-          return name.substring(0, name.lastIndexOf(".")).substring(6);
-        }
-
         // Compute a unique index for each package name.
         imports.forEach(function(d) {
-          if (!indexByName.has(d = name(d.name))) {
-            nameByIndex.set(n, d);
-            indexByName.set(d, n++);
+          if (!indexByName.has(d.startLocation)) {
+            nameByIndex.set(n, d.startLocation);
+            indexByName.set(d.startLocation, n++);
+          }
+          if (!indexByName.has(d.endLocation)) {
+            nameByIndex.set(n, d.endLocation);
+            indexByName.set(d.endLocation, n++);
           }
         });
 
         // Construct a square matrix counting package imports.
         imports.forEach(function(d) {
-          var source = indexByName.get(name(d.name)),
+          var source = indexByName.get(d.startLocation),
               row = matrix[source];
           if (!row) {
            row = matrix[source] = [];
            for (var i = -1; ++i < n;) row[i] = 0;
           }
-          d.imports.forEach(function(d) { row[indexByName.get(name(d))]++; });
+          //d.imports.forEach(function(d) { row[indexByName.get(d.endLocation)]++; });
         });
+
+        //clean up data
+        var newMatrix = matrix;
+        matrix = [];
+        var l = 15;
+        for (var i = 0; i < l; i++) {
+          matrix.splice(i, 0, []);
+          for (var j = 0; j < l; j++){
+            matrix[i].splice(j, 0, i + 1); 
+          }
+        }
 
         chord.matrix(matrix);
 

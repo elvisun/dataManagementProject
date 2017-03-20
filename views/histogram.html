@@ -3,19 +3,24 @@
 <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
 <style>
 
-.bars rect {
-  fill: crimson;
-}
+  .bar{
+    fill: crimson;
+  }
 
-.axis text {
-  font: 10px sans-serif;
-}
+  .bar:hover{
+    fill: brown;
+  }
 
-.axis path, .axis line {
-  fill: none;
-  stroke: #000;
-  shape-rendering: crispEdges;
-}
+  .axis {
+    font: 10px sans-serif;
+  }
+
+  .axis path,
+  .axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+  }
 
 </style>
 <body>
@@ -48,111 +53,111 @@
 <div class="container">
   <div class="row">
     <div id="key" class="col-mid-10 col-md-offset-1">
-      <<script src="//d3js.org/d3.v3.min.js"></script>
+    <div>
+      <pre>
+        SELECT a.id, (count(b.fromUser) + count(c.user)) useCount
+        FROM user a
+          JOIN offer b
+            ON a.id = b.fromUser
+          JOIN request c
+            ON a.id = c.user
+        group by a.id
+        order by a.id;
+      </pre>
+    </div>
+      <script src='https://cdnjs.cloudflare.com/ajax/libs/spin.js/2.0.1/spin.min.js'></script> 
+      <script src="//d3js.org/d3.v3.min.js"></script>
       <script>
-        function histogramChart() {
-          var margin = {top: 0, right: 0, bottom: 20, left: 0},
-              width = 960,
-              height = 500;
+      var target = document.getElementById('key');
+      var spinner = new Spinner({
+        lines: 9, // The number of lines to draw
+        length: 9, // The length of each line
+        width: 5, // The line thickness
+        radius: 14, // The radius of the inner circle
+        color: '#EE3124', // #rgb or #rrggbb or array of colors
+        speed: 1.9, // Rounds per second
+        trail: 40, // Afterglow percentage
+        className: 'spinner', // The CSS class to assign to the spinner
+      }).spin(target);
+      // set the dimensions of the canvas
+      var margin = {top: 20, right: 20, bottom: 70, left: 40},
+          width = 1000 - margin.left - margin.right,
+          height = 500 - margin.top - margin.bottom;
 
-          var histogram = d3.layout.histogram(),
-              x = d3.scale.ordinal(),
-              y = d3.scale.linear(),
-              xAxis = d3.svg.axis().scale(x).orient("bottom").tickSize(6, 0);
 
-          function chart(selection) {
-            selection.each(function(data) {
+      // set the ranges
+      var x = d3.scale.ordinal().rangeRoundBands([0, width], .05);
 
-              // Compute the histogram.
-              data = histogram(data);
+      var y = d3.scale.linear().range([height, 0]);
 
-              // Update the x-scale.
-              x   .domain(data.map(function(d) { return d.x; }))
-                  .rangeRoundBands([0, width - margin.left - margin.right], .1);
+      // define the axis
+      var xAxis = d3.svg.axis()
+          .scale(x)
+          .orient("bottom")
 
-              // Update the y-scale.
-              y   .domain([0, d3.max(data, function(d) { return d.y; })])
-                  .range([height - margin.top - margin.bottom, 0]);
 
-              // Select the svg element, if it exists.
-              var svg = d3.select(this).selectAll("svg").data([data]);
+      var yAxis = d3.svg.axis()
+          .scale(y)
+          .orient("left")
+          .ticks(10);
 
-              // Otherwise, create the skeletal chart.
-              var gEnter = svg.enter().append("svg").append("g");
-              gEnter.append("g").attr("class", "bars");
-              gEnter.append("g").attr("class", "x axis");
 
-              // Update the outer dimensions.
-              svg .attr("width", width)
-                  .attr("height", height);
+      // add the SVG element
+      var svg = d3.select("#key").append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+          .attr("transform", 
+                "translate(" + margin.left + "," + margin.top + ")");
 
-              // Update the inner dimensions.
-              var g = svg.select("g")
-                  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-              // Update the bars.
-              var bar = svg.select(".bars").selectAll(".bar").data(data);
-              bar.enter().append("rect");
-              bar.exit().remove();
-              bar .attr("width", x.rangeBand())
-                  .attr("x", function(d) { return x(d.x); })
-                  .attr("y", function(d) { return y(d.y); })
-                  .attr("height", function(d) { return y.range()[0] - y(d.y); })
-                  .order();
-
-              // Update the x-axis.
-              g.select(".x.axis")
-                  .attr("transform", "translate(0," + y.range()[0] + ")")
-                  .call(xAxis);
+      setTimeout(function(){
+         // load the data
+        d3.json("http://localhost:3000/histogramdata", function(error, data) {
+            spinner.stop();
+            data.forEach(function(d) {
+                d.Letter = d.Letter;
+                d.Freq = +d.Freq;
             });
-          }
+          
+          // scale the range of the data
+          x.domain(data.map(function(d) { return d.Letter; }));
+          y.domain([0, d3.max(data, function(d) { return d.Freq; })]);
 
-          chart.margin = function(_) {
-            if (!arguments.length) return margin;
-            margin = _;
-            return chart;
-          };
+          // add axis
+          svg.append("g")
+              .attr("class", "x axis")
+              .attr("transform", "translate(0," + height + ")")
+              .call(xAxis)
+            .selectAll("text")
+              .style("text-anchor", "end")
+              .attr("dx", "-.8em")
+              .attr("dy", "-.55em")
+              .attr("transform", "rotate(-90)" );
 
-          chart.width = function(_) {
-            if (!arguments.length) return width;
-            width = _;
-            return chart;
-          };
+          svg.append("g")
+              .attr("class", "y axis")
+              .call(yAxis)
+            .append("text")
+              .attr("transform", "rotate(-90)")
+              .attr("y", 5)
+              .attr("dy", ".71em")
+              .style("text-anchor", "end")
+              .text("Frequency");
 
-          chart.height = function(_) {
-            if (!arguments.length) return height;
-            height = _;
-            return chart;
-          };
 
-          // Expose the histogram's value, range and bins method.
-          d3.rebind(chart, histogram, "value", "range", "bins");
+          // Add bar chart
+          svg.selectAll("bar")
+              .data(data)
+            .enter().append("rect")
+              .attr("class", "bar")
+              .attr("x", function(d) { return x(d.Letter); })
+              .attr("width", x.rangeBand())
+              .attr("y", function(d) { return y(d.Freq); })
+              .attr("height", function(d) { return height - y(d.Freq); });
 
-          // Expose the x-axis' tickFormat method.
-          d3.rebind(chart, xAxis, "tickFormat");
-
-          return chart;
-        }
-      </script>
-      <script>
-
-      d3.select("#key")
-          .datum(irwinHallDistribution(10000, 10))
-        .call(histogramChart()
-          .bins(d3.scale.linear().ticks(20))
-          .tickFormat(d3.format(".02f")));
-
-      function irwinHallDistribution(n, m) {
-        var distribution = [];
-        for (var i = 0; i < n; i++) {
-          for (var s = 0, j = 0; j < m; j++) {
-            s += Math.random();
-          }
-          distribution.push(s / m);
-        }
-        return distribution;
-      }
-
+        });
+      }, 1500);
+      
       </script>
     </div>
   </div>
