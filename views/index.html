@@ -1,10 +1,7 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
+<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
 <style>
-
-body {
-  font: 10px sans-serif;
-}
 
 .chord {
   fill-opacity: .67;
@@ -12,94 +9,131 @@ body {
 
 </style>
 <body>
-<script src="//d3js.org/d3.v3.min.js"></script>
-<script>
+<div class="container">
+  <!-- Static navbar -->
+  <nav class="navbar navbar-toggleable-md navbar-light bg-faded">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="#">Carpool Database</a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav">
+          <li class="active"><a href="/">Home</a></li>
+          <li><a href="/calendar">Calendar View</a></li>
+          <li><a href="/histogram">Histogram</a></li>
+          <li><a href="/questions">Questions</a></li>
+        </ul>
+      </div><!--/.nav-collapse -->
+    </div><!--/.container-fluid -->
+  </nav>
+</div>
 
-var outerRadius = 960 / 2,
-    innerRadius = outerRadius - 130;
 
-var fill = d3.scale.category20c();
+<div class="container">
+  <div class="row">
+    <div id="key" class="col-mid-10 col-md-offset-1">
+    <script src="//d3js.org/d3.v3.min.js"></script>
+    <script>
 
-var chord = d3.layout.chord()
-    .padding(.04)
-    .sortSubgroups(d3.descending)
-    .sortChords(d3.descending);
+      var outerRadius = 960 / 2,
+          innerRadius = outerRadius - 130;
 
-var arc = d3.svg.arc()
-    .innerRadius(innerRadius)
-    .outerRadius(innerRadius + 20);
+      var fill = d3.scale.category20c();
 
-var svg = d3.select("body").append("svg")
-    .attr("width", outerRadius * 2)
-    .attr("height", outerRadius * 2)
-  .append("g")
-    .attr("transform", "translate(" + outerRadius + "," + outerRadius + ")");
+      var chord = d3.layout.chord()
+          .padding(.04)
+          .sortSubgroups(d3.descending)
+          .sortChords(d3.descending);
 
-d3.json("data.json", function(error, imports) {
-  if (error) throw error;
+      var arc = d3.svg.arc()
+          .innerRadius(innerRadius)
+          .outerRadius(innerRadius + 20);
 
-  var indexByName = d3.map(),
-      nameByIndex = d3.map(),
-      matrix = [],
-      n = 0;
+      var svg = d3.select("#key").append("svg")
+          .attr("width", outerRadius * 2)
+          .attr("height", outerRadius * 2)
+        .append("g")
+          .attr("transform", "translate(" + outerRadius + "," + outerRadius + ")");
 
-  // Returns the Flare package name for the given class name.
-  function name(name) {
-    return name.substring(0, name.lastIndexOf(".")).substring(6);
-  }
+      d3.json("data.json", function(error, imports) {
+        if (error) throw error;
 
-  // Compute a unique index for each package name.
-  imports.forEach(function(d) {
-    if (!indexByName.has(d = name(d.name))) {
-      nameByIndex.set(n, d);
-      indexByName.set(d, n++);
-    }
-  });
+        var indexByName = d3.map(),
+            nameByIndex = d3.map(),
+            matrix = [],
+            n = 0;
 
-  // Construct a square matrix counting package imports.
-  imports.forEach(function(d) {
-    var source = indexByName.get(name(d.name)),
-        row = matrix[source];
-    if (!row) {
-     row = matrix[source] = [];
-     for (var i = -1; ++i < n;) row[i] = 0;
-    }
-    d.imports.forEach(function(d) { row[indexByName.get(name(d))]++; });
-  });
+        // Returns the Flare package name for the given class name.
+        function name(name) {
+          return name.substring(0, name.lastIndexOf(".")).substring(6);
+        }
 
-  chord.matrix(matrix);
+        // Compute a unique index for each package name.
+        imports.forEach(function(d) {
+          if (!indexByName.has(d = name(d.name))) {
+            nameByIndex.set(n, d);
+            indexByName.set(d, n++);
+          }
+        });
 
-  var g = svg.selectAll(".group")
-      .data(chord.groups)
-    .enter().append("g")
-      .attr("class", "group");
+        // Construct a square matrix counting package imports.
+        imports.forEach(function(d) {
+          var source = indexByName.get(name(d.name)),
+              row = matrix[source];
+          if (!row) {
+           row = matrix[source] = [];
+           for (var i = -1; ++i < n;) row[i] = 0;
+          }
+          d.imports.forEach(function(d) { row[indexByName.get(name(d))]++; });
+        });
 
-  g.append("path")
-      .style("fill", function(d) { return fill(d.index); })
-      .style("stroke", function(d) { return fill(d.index); })
-      .attr("d", arc);
+        chord.matrix(matrix);
 
-  g.append("text")
-      .each(function(d) { d.angle = (d.startAngle + d.endAngle) / 2; })
-      .attr("dy", ".35em")
-      .attr("transform", function(d) {
-        return "rotate(" + (d.angle * 180 / Math.PI - 90) + ")"
-            + "translate(" + (innerRadius + 26) + ")"
-            + (d.angle > Math.PI ? "rotate(180)" : "");
-      })
-      .style("text-anchor", function(d) { return d.angle > Math.PI ? "end" : null; })
-      .text(function(d) { return nameByIndex.get(d.index); });
+        var g = svg.selectAll(".group")
+            .data(chord.groups)
+          .enter().append("g")
+            .attr("class", "group");
 
-  svg.selectAll(".chord")
-      .data(chord.chords)
-    .enter().append("path")
-      .attr("class", "chord")
-      .style("stroke", function(d) { return d3.rgb(fill(d.source.index)).darker(); })
-      .style("fill", function(d) { return fill(d.source.index); })
-      .attr("d", d3.svg.chord().radius(innerRadius));
+        g.append("path")
+            .style("fill", function(d) { return fill(d.index); })
+            .style("stroke", function(d) { return fill(d.index); })
+            .attr("d", arc);
 
-});
+        g.append("text")
+            .each(function(d) { d.angle = (d.startAngle + d.endAngle) / 2; })
+            .attr("dy", ".35em")
+            .attr("transform", function(d) {
+              return "rotate(" + (d.angle * 180 / Math.PI - 90) + ")"
+                  + "translate(" + (innerRadius + 26) + ")"
+                  + (d.angle > Math.PI ? "rotate(180)" : "");
+            })
+            .style("text-anchor", function(d) { return d.angle > Math.PI ? "end" : null; })
+            .text(function(d) { return nameByIndex.get(d.index); });
 
-d3.select(self.frameElement).style("height", outerRadius * 2 + "px");
+        svg.selectAll(".chord")
+            .data(chord.chords)
+          .enter().append("path")
+            .attr("class", "chord")
+            .style("stroke", function(d) { return d3.rgb(fill(d.source.index)).darker(); })
+            .style("fill", function(d) { return fill(d.source.index); })
+            .attr("d", d3.svg.chord().radius(innerRadius));
 
-</script>
+      });
+
+      d3.select(self.frameElement).style("height", outerRadius * 2 + "px");
+
+      </script>
+    </div>
+  </div>
+</div>
+
+
+
+</body>
+
