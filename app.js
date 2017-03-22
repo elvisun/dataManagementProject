@@ -92,7 +92,13 @@ app.get('/citydata', function (req,res){
 });
 
 app.get('/calendardata', function(req,res){
-
+  connection.query('select dateTime, COUNT(*) as _count from offer group by dateTime having COUNT(*) > 1', function (error, results, fields) {
+    if (error) throw error;
+    for (var i = results.length - 1; i >= 0; i--) {
+      results[i].dateTime = new Date(Date.parse(results[i].dateTime));
+    }
+    res.json(results);
+  });
 });
 
 app.get('/histogramdata', function(req,res){

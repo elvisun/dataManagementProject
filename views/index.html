@@ -24,10 +24,9 @@
       </div>
       <div id="navbar" class="navbar-collapse collapse">
         <ul class="nav navbar-nav">
-          <li class="active"><a href="/">Home</a></li>
+          <li class="active"><a href="/">Traffic Map</a></li>
           <li><a href="/calendar">Calendar View</a></li>
           <li><a href="/histogram">Histogram</a></li>
-          <li><a href="/questions">Questions</a></li>
         </ul>
       </div><!--/.nav-collapse -->
     </div><!--/.container-fluid -->
@@ -38,8 +37,34 @@
 <div class="container">
   <div class="row">
     <div id="key" class="col-mid-10 col-md-offset-1">
+      <h1>Which path has the highest traffic?</h1>
       <pre>
-        select startLocation, endLocation from offer
+        SELECT startLocation, endLocation FROM offer
+
+        //Create (Index: Cityname) Key-value pairs
+        imports.forEach(function(d) {
+          if (!indexByName.has(d.startLocation)) {
+            nameByIndex.set(n, d.startLocation);
+            indexByName.set(d.startLocation, n++);
+          }
+          if (!indexByName.has(d.endLocation)) {
+            nameByIndex.set(n, d.endLocation);
+            indexByName.set(d.endLocation, n++);
+          }
+        });
+        
+        // Create matrix
+        imports.forEach(function(d) {
+          var source = indexByName.get(d.startLocation),
+              row = matrix[source];
+          if (!row) {
+           row = matrix[source] = [];
+           for (var i = -1; ++i < n;) row[i] = 0;
+          }
+
+          d.imports.forEach(function(d) { row[indexByName.get(d.endLocation)]++; });
+        });
+
       </pre>
     <script src='https://cdnjs.cloudflare.com/ajax/libs/spin.js/2.0.1/spin.min.js'></script> 
     <script src="//d3js.org/d3.v3.min.js"></script>
