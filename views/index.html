@@ -101,7 +101,7 @@
         .append("g")
           .attr("transform", "translate(" + outerRadius + "," + outerRadius + ")");
 
-      d3.json("http://localhost:3000/citydata", function(error, imports) {
+      d3.json("/citydata", function(error, imports) {
         spinner.stop();
         if (error) throw error;
 
