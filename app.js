@@ -97,6 +97,7 @@ app.get('/calendardata', function(req,res){
     for (var i = results.length - 1; i >= 0; i--) {
       results[i].dateTime = new Date(Date.parse(results[i].dateTime));
     }
+    //console.log(results);
     res.json(results);
   });
 });
@@ -109,6 +110,7 @@ app.get('/histogramdata', function(req,res){
     for (var i = results.length - 1; i >= 0; i--) {
       ret.splice(0,0,results[i].useCount);
     }
+    console.log(results);
     var newRet = [];
     var step = 50;
     for (var i = 0; i < 30; i++){
@@ -123,7 +125,6 @@ app.get('/histogramdata', function(req,res){
       newRet[k].Freq++;
     }
     
-    //console.log(newRet);
     res.json(newRet);
   });
 });
