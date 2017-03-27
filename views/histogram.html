@@ -112,7 +112,7 @@
 
       setTimeout(function(){
          // load the data
-        d3.json("http://localhost:3000/histogramdata", function(error, data) {
+        d3.json("/histogramdata", function(error, data) {
             spinner.stop();
             data.forEach(function(d) {
                 d.Letter = d.Letter;
