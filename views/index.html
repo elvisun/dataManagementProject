@@ -39,31 +39,47 @@
     <div id="key" class="col-mid-10 col-md-offset-1">
       <h1>Which path has the highest traffic?</h1>
       <pre>
-        SELECT startLocation, endLocation FROM offer
+        SELECT offer.startCityID, offer.endCityID
 
-        //Create (Index: Cityname) Key-value pairs
-        imports.forEach(function(d) {
-          if (!indexByName.has(d.startLocation)) {
-            nameByIndex.set(n, d.startLocation);
-            indexByName.set(d.startLocation, n++);
-          }
-          if (!indexByName.has(d.endLocation)) {
-            nameByIndex.set(n, d.endLocation);
-            indexByName.set(d.endLocation, n++);
-          }
-        });
-        
-        // Create matrix
-        imports.forEach(function(d) {
-          var source = indexByName.get(d.startLocation),
-              row = matrix[source];
-          if (!row) {
-           row = matrix[source] = [];
-           for (var i = -1; ++i < n;) row[i] = 0;
-          }
+        import collections
+        import heapq
 
-          d.imports.forEach(function(d) { row[indexByName.get(d.endLocation)]++; });
-        });
+        def main():
+          # pretend we have sql connected, then we query from sql
+          q = 'SELECT offer.startCityID, offer.endCityID;'
+          data = queryFromSQL(q)
+
+          #hash map to store index of locations
+          locationIndex = collections.defaultDict()
+
+          # build an index mapping from location to index
+          for startLocation, endLocation in data:
+            if not startLocation in locationIndex:
+              locationIndex[len(locationIndex)] = startLocation
+            if not endLocation in locationIndex:
+              locationIndex[len(locationIndex)] = endLocation
+
+          # create a n by n matrix to store the frequencies using list comprehension
+          matrix = [[0 for _ in xrange(0,len(locationIndex))] for __ in xrange(0, len(locationIndex))]
+
+          # count the frequency for each route
+          for startLocation, endLocation in data:
+            matrix[startLocation][endLocation] += 1
+
+          # Then this matrix will store the frequency from one location to another
+          # You can get the top 10 using a heap
+          h = []
+
+          # first we push matrix elements into the heap as (frequency, startIndex, endIndex) key-value pairs
+          for i in xrange(0, len(matrix)):
+            for j in xrange(0, len(matrix[i])):
+              h.append((matrix[i][j],i,j))
+
+          # now we can convert them into a heap
+          heapq.heapify(h)
+
+          # now we can get the top 10 (or any) elements in constant time
+          return heapq.nlargest(10)
 
       </pre>
     <script src='https://cdnjs.cloudflare.com/ajax/libs/spin.js/2.0.1/spin.min.js'></script> 

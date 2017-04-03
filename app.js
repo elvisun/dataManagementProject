@@ -51,7 +51,8 @@ app.use(function(err, req, res, next) {
 
 // password: databasepassword
 var connection = mysql.createConnection({
-  host     : 'databaseforproject.cjffpyni9e6r.us-east-2.rds.amazonaws.com',
+  //host     : 'databaseforproject.cjffpyni9e6r.us-east-2.rds.amazonaws.com',
+  host     : 'restored.cjffpyni9e6r.us-east-2.rds.amazonaws.com',
   user     : 'databaseuser',
   password : 'databasepassword',
   database : 'sys'

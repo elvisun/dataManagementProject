@@ -55,14 +55,15 @@
     <h1> What's the distribution of the user's offers and request? </h1>
     <div>
       <pre>
-        SELECT a.id, (count(b.fromUser) + count(c.user)) useCount
-        FROM user a
-          JOIN offer b
-            ON a.id = b.fromUser
-          JOIN request c
-            ON a.id = c.user
-        group by a.id
-        order by a.id;
+      SELECT a.id, (count(b.offerUserID) + count(c.requestUserID)) useCount
+      FROM user a
+        JOIN offer b
+          ON a.id = b.offerUserID
+        JOIN request c
+          ON a.id = c.requestUserID
+      GROUP BY useCount
+      ORDER BY useCount DESC;
+
       </pre>
     </div>
       <script src='https://cdnjs.cloudflare.com/ajax/libs/spin.js/2.0.1/spin.min.js'></script> 
